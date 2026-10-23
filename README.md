@@ -25,7 +25,7 @@ sans dépendances, sur le VPS de votre choix.
 
 ![Schéma : WhatsApp, normalisation, moteur de règles, destinations, journal et tableau de bord](docs/architecture.svg)
 
-Le GIF ci-dessus montre exactement ce trajet, sans credentials : la règle part, `parse_task` calcule
+Le GIF en haut de page montre exactement ce trajet, sans credentials : la règle part, `parse_task` calcule
 « demain à 14h » → `2026-10-24 14:00`, Notion / Sheets / Airtable répondent « non connecté » au lieu
 de planter, et `reply` produit la réponse. Rien n'est maquetté — les images sont capturées depuis
 l'interface réelle (`node scripts/make-shots.cjs`).
