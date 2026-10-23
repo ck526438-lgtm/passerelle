@@ -13,7 +13,7 @@ sans dépendances, sur le VPS de votre choix.
 </p>
 
 <p align="center">
-  <img src="docs/demo.gif" alt="Démo animée : un message « devis pour demain à 14h » saisi dans le tableau de bord traverse le pipeline, la date est calculée, les connecteurs non configurés sont sautés poliment, et la réponse client apparaît" width="100%">
+  <img src="docs/demo.gif" alt="Démo animée : un message « devis pour demain à 14h » saisi dans le tableau de bord part dans le pipeline, la règle « Demande de devis → lead CRM » se déclenche, et la réponse produite pour le client apparaît à droite" width="100%">
 </p>
 
 > État : **MVP prouvé bout en bout**. La chaîne complète (webhook WhatsApp → transcription vocale →
@@ -25,10 +25,11 @@ sans dépendances, sur le VPS de votre choix.
 
 ![Schéma : WhatsApp, normalisation, moteur de règles, destinations, journal et tableau de bord](docs/architecture.svg)
 
-Le GIF en haut de page montre exactement ce trajet, sans credentials : la règle part, `parse_task` calcule
-« demain à 14h » → `2026-10-24 14:00`, Notion / Sheets / Airtable répondent « non connecté » au lieu
-de planter, et `reply` produit la réponse. Rien n'est maquetté — les images sont capturées depuis
-l'interface réelle (`node scripts/make-shots.cjs`).
+Le GIF en tête de page joue cette scène sans aucun credential : le message entre, la règle
+« Demande de devis → lead CRM » se déclenche, la réponse client sort. Le détail étape par
+étape — `parse_task` qui calcule « demain à 14h » → `2026-10-24 14:00`, Notion / Sheets /
+Airtable qui répondent « non connecté » au lieu de planter — est sur la capture juste après.
+Rien n'est maquetté : toutes les images viennent de l'interface réelle (`node scripts/make-shots.cjs`).
 
 <p align="center">
   <img src="docs/capture-pipeline.png" alt="Une exécution complète : mémoriser le contact, structurer la demande sans IA, Google Sheets ignoré, Airtable ignoré, répondre sur WhatsApp" width="100%">

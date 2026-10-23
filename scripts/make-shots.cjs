@@ -18,10 +18,12 @@ const BASE = process.env.DEMO_URL ?? 'http://127.0.0.1:8787';
 const DOCS = path.join(__dirname, '..', 'docs');
 const DEMO = 'name=Koffi%20Adjovi&phone=22997000000';
 
+// La capture « pipeline » déclenche un run : elle passe en premier pour que les
+// compteurs du bandeau restent identiques sur toutes les autres images.
 const SHOTS = [
-  { name: 'capture-simuler', query: DEMO, width: 1440, height: 760 },
   { name: 'capture-pipeline', query: `${DEMO}&auto=1`, width: 1440, height: 1240, budget: 7000 },
-  { name: 'capture-journal', query: 'auto=1', hash: 'log', width: 1440, height: 760, budget: 7000 },
+  { name: 'capture-simuler', query: DEMO, width: 1440, height: 760 },
+  { name: 'capture-journal', query: DEMO, hash: 'log', width: 1440, height: 760 },
   { name: 'capture-regles', hash: 'rules', width: 1440, height: 900 },
   { name: 'capture-connecteurs', hash: 'conn', width: 1440, height: 760 },
 ];

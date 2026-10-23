@@ -19,7 +19,7 @@ const PNG = require('pngjs').PNG;
 const GifEncoder = require('gif-encoder-2');
 
 const BASE = process.env.DEMO_URL ?? 'http://127.0.0.1:8787';
-const SIZE = { width: Number(process.env.GIF_WIDTH ?? 1180), height: Number(process.env.GIF_HEIGHT ?? 980) };
+const SIZE = { width: Number(process.env.GIF_WIDTH ?? 1180), height: Number(process.env.GIF_HEIGHT ?? 780) };
 const FRAMES_DIR = path.join(__dirname, '..', 'docs', 'frames');
 const OUT = path.join(__dirname, '..', 'docs', 'demo.gif');
 
@@ -27,8 +27,8 @@ const DEMO_TEXT = "Bonjour, je voudrais un devis pour refaire la salle de bain, 
 const DEMO = 'name=Koffi%20Adjovi&phone=22997000000';
 
 // Une seule et même scène : le GIF reste sur l'onglet Simuler, du champ vide à
-// la réponse produite. Les autres onglets sont montrés en captures fixes
-// (scripts/make-shots.cjs) pour ne pas alourdir l'animation.
+// la réponse client produite. Le détail des étapes tient dans une capture fixe
+// plus haute (scripts/make-shots.cjs) pour ne pas noyer l'animation de vide.
 const FRAMES = [
   { name: '01-champ-vide', url: `${BASE}/?${DEMO}&chars=0`, delay: 600 },
   { name: '02-frappe-1', url: `${BASE}/?${DEMO}&chars=22`, delay: 200 },
