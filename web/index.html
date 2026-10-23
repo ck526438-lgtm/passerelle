@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Passerelle — WhatsApp → CRM</title>
+<style>
+  :root {
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2129; --line:#2a313c;
+    --text:#e6edf3; --muted:#8b949e; --green:#25d366; --green-d:#128c7e;
+    --red:#f85149; --amber:#d29922; --blue:#58a6ff; --radius:12px;
+  }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  header { padding:18px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  h1 { font-size:17px; margin:0; letter-spacing:.3px }
+  h1 span { color:var(--green) }
+  .pill { font-size:12px; padding:3px 10px; border-radius:999px; background:var(--panel2); border:1px solid var(--line); color:var(--muted) }
+  .pill.on { color:var(--green); border-color:#1d4d2f }
+  .pill.off { color:var(--muted) }
+  main { padding:20px 22px 60px; max-width:1180px; margin:0 auto }
+  nav { display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap }
+  nav button { background:var(--panel); color:var(--muted); border:1px solid var(--line); padding:8px 14px; border-radius:999px; cursor:pointer; font-size:13px }
+  nav button.active { background:var(--green-d); color:#fff; border-color:transparent }
+  section { display:none } section.active { display:block }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px } @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px }
+  .card h2 { font-size:14px; margin:0 0 12px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px }
+  label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px }
+  textarea, input, select { width:100%; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:9px 10px; font:inherit }
+  textarea { min-height:96px; resize:vertical }
+  textarea.mono { font-family:ui-monospace,Consolas,monospace; font-size:12.5px; min-height:420px }
+  button.act { background:var(--green-d); color:#fff; border:0; border-radius:8px; padding:9px 15px; cursor:pointer; font-size:13px; margin-top:12px }
+  button.act.secondary { background:var(--panel2); border:1px solid var(--line); color:var(--text) }
+  button.act:hover { filter:brightness(1.1) }
+  .row { display:flex; gap:10px } .row > * { flex:1 }
+  .bubble { background:#0b3d2e; border-radius:12px 12px 2px 12px; padding:10px 12px; margin:8px 0; max-width:85%; white-space:pre-wrap }
+  .bubble.in { background:var(--panel2); border-radius:12px 12px 12px 2px }
+  .step { border-left:3px solid var(--line); padding:8px 12px; margin:8px 0; background:var(--panel2); border-radius:0 8px 8px 0 }
+  .step.ok { border-color:var(--green) } .step.err { border-color:var(--red) } .step.skip { border-color:var(--amber) }
+  .step b { font-weight:600 } .step small { display:block; color:var(--muted); margin-top:3px; word-break:break-word }
+  .log { max-height:340px; overflow:auto }
+  .log .item { padding:8px 0; border-bottom:1px solid var(--line); font-size:13px }
+  .log .item:last-child { border:0 }
+  .time { color:var(--muted); font-size:11.5px; font-variant-numeric:tabular-nums }
+  .tag { font-size:11px; padding:1px 7px; border-radius:6px; background:var(--panel2); border:1px solid var(--line); color:var(--muted) }
+  .err-text { color:var(--red); white-space:pre-wrap } .warn-text { color:var(--amber) } .ok-text { color:var(--green) }
+  code { background:var(--panel2); padding:1px 5px; border-radius:5px; font-size:12.5px }
+  details summary { cursor:pointer; color:var(--muted); font-size:12.5px; margin:4px 0 }
+  .empty { color:var(--muted); font-style:italic; padding:12px 0 }
+</style>
+</head>
+<body>
+<header>
+  <h1>Passerelle<span>.</span></h1>
+  <span class="pill" id="provider">—</span>
+  <span class="pill" id="counts">—</span>
+  <span class="pill" id="rulesCount">—</span>
+  <span style="flex:1"></span>
+  <input id="token" placeholder="jeton admin (ADMIN_TOKEN)" style="width:210px" />
+</header>
+
+<main>
+<nav>
+  <button data-tab="sim" class="active">Simuler</button>
+  <button data-tab="log">Journal</button>
+  <button data-tab="rules">Règles</button>
+  <button data-tab="conn">Connecteurs</button>
+  <button data-tab="help">Mise en route</button>
+</nav>
+
+<section class="active" data-tab="sim">
+  <div class="grid">
+    <div class="card">
+      <h2>Faux message entrant</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0">Rien n'est envoyé à un vrai client : les réponses sont capturées, les écritures Notion/Sheets sont réellement tentées.</p>
+      <div class="row">
+        <div><label>Type de message</label>
+          <select id="type"><option value="text">Texte</option><option value="audio">Note vocale</option></select>
+        </div>
+        <div><label>Numéro du contact</label><input id="chatId" value="33612345678" /></div>
+      </div>
+      <label>Nom affiché</label><input id="contactName" value="Awa Diop" />
+      <label>Contenu</label>
+      <textarea id="text">Bonjour, je voudrais un devis pour refaire la salle de bain, vous pouvez passer demain à 14h ?</textarea>
+      <div class="row">
+        <button class="act" id="runSim">Lancer dans le pipeline</button>
+        <button class="act secondary" id="runExplain">Quelles règles se déclenchent ?</button>
+      </div>
+      <div id="simOut" style="margin-top:16px"></div>
+    </div>
+    <div class="card">
+      <h2>Dernières réponses produites</h2>
+      <div id="lastReplies"><p class="empty">Aucune pour l'instant.</p></div>
+    </div>
+  </div>
+</section>
+
+<section data-tab="log">
+  <div class="grid">
+    <div class="card"><h2>Messages</h2><div class="log" id="events"></div></div>
+    <div class="card"><h2>Exécutions de règles</h2><div class="log" id="runs"></div></div>
+  </div>
+</section>
+
+<section data-tab="rules">
+  <div class="card">
+    <h2>rules.json</h2>
+    <textarea id="rules" class="mono" spellcheck="false"></textarea>
+    <div class="row" style="align-items:center">
+      <div><button class="act" id="saveRules">Valider et enregistrer</button>
+        <button class="act secondary" id="reloadRules">Recharger</button></div>
+      <div id="rulesMsg"></div>
+    </div>
+    <details><summary>Langage des règles</summary>
+      <pre style="white-space:pre-wrap;color:var(--muted)">
+{
+  "id": "ma-regle",              // sert au cooldown et aux journaux
+  "name": "Lisible dans l'UI",
+  "enabled": true,
+  "exclusive": true,             // empêche les autres règles de répondre aussi
+  "cooldown_seconds": 120,       // anti-boucle par contact
+  "filters": {
+    "types": ["text","audio"],
+    "text_contains_any": ["devis","prix"], "text_excludes_any": ["urgent"],
+    "text_regex": "\\?$", "min_chars": 6,
+    "fields": { "isOutsideHours": true, "isNewContact": true }
+  },
+  "steps": [
+    { "action": "transcribe", "as": "transcript" },
+    { "action": "llm_extract", "as": "task", "source": "{{transcript}}" },
+    { "action": "notion_create_page", "title": "{{task.title}}",
+      "date": { "Échéance": "{{task.date}}" }, "continue_on_error": true },
+    { "action": "reply", "if": { "path": "task.dueLabel", "op": "exists" },
+      "template": "Noté ✅ {{task.title}}" }
+  ]
+}
+Variables : {{text}} {{contactName}} {{firstName}} {{chatId}} {{date}} {{time}}
+            {{hour}} {{weekday}} {{isOutsideHours}} {{isNewContact}} {{alertWebhook}}
+            plus toute variable créée par "as".
+Opérateurs "if" : exists is_empty equals not_equals contains starts_with in gt gte lt regex
+Autosauvegarde du fichier : les réglages se rechargent tous les 4 s, pas besoin de redémarrer.</pre>
+    </details>
+  </div>
+</section>
+
+<section data-tab="conn">
+  <div class="grid">
+    <div class="card"><h2>État des connecteurs</h2><div id="connectors"></div></div>
+    <div class="card"><h2>Que peut faire chaque action</h2><div id="actions"></div></div>
+  </div>
+</section>
+
+<section data-tab="help">
+  <div class="card">
+    <h2>Passer en vrai WhatsApp (Cloud API)</h2>
+    <ol style="color:var(--muted);line-height:1.9">
+      <li>Créer une app Meta (type Business) puis activer le produit <b>WhatsApp</b>.</li>
+      <li>Copier <code>Phone number ID</code> et générer un <code>token permanent</code>.</li>
+      <li>Renseigner <code>.env</code> : <code>WA_PROVIDER=cloud</code>, <code>WA_PHONE_NUMBER_ID</code>, <code>WA_ACCESS_TOKEN</code>, <code>WA_APP_SECRET</code>, <code>WA_VERIFY_TOKEN</code>.</li>
+      <li>Exposer le port en HTTPS (Caddy, Cloudflare Tunnel ou le VPS du client).</li>
+      <li>Dans Meta : webhook <code>https://…/webhook/whatsapp</code>, champ <code>messages</code>.</li>
+      <li>Envoyer un message réel au numéro : il apparaît dans l'onglet Journal.</li>
+    </ol>
+    <p style="color:var(--muted)">Une note vocale reçu <b>après</b> l'abonnement au champ <code>messages</code> se transcrit si
+    <code>OPENAI_API_KEY</code> est renseigné ; sinon l'interface affiche « transcription simulée ».</p>
+  </div>
+</section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const token = () => $('token').value.trim();
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    ...options,
+    headers: { 'content-type': 'application/json', 'x-passerelle-token': token(), ...(options.headers ?? {}) },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { flash('rulesMsg', 'Jeton admin requis — saisis-le dans le champ en haut à droite.', 'err'); throw new Error('401'); }
+  if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+  return data;
+}
+
+function flash(target, message, kind = 'ok') {
+  $(target).innerHTML = `<div class="${kind}-text">${esc(message)}</div>`;
+}
+
+function activateTab(name) {
+  document.querySelectorAll('nav button, section').forEach((el) => el.classList.toggle('active', el.dataset.tab === name));
+  if (name === 'log') loadLog();
+  if (name === 'rules') loadRules();
+  if (name !== 'sim') $('simOut').innerHTML = '';
+}
+
+document.querySelectorAll('nav button').forEach((button) => {
+  button.onclick = () => {
+    location.hash = button.dataset.tab;
+    activateTab(button.dataset.tab);
+  };
+});
+
+const stepClass = (step) => (!step.ok ? 'err' : step.skipped ? 'skip' : 'ok');
+
+function renderSteps(runs) {
+  return (runs ?? []).map((run) => `
+    <div style="margin-top:14px">
+      <b>${esc(run.ruleName)}</b> <span class="tag">${esc(run.status)}</span> <span class="time">${run.durationMs ?? 0} ms</span>
+      ${run.steps.map((s) => `
+        <div class="step ${stepClass(s)}">
+          <b>${esc(s.label)}</b>${s.as ? ` <span class="tag">→ {{${esc(s.as)}}}</span>` : ''}
+          <small>${!s.ok ? esc(s.error) : s.skipped ? `ignoré : ${esc(s.skipped)}` : esc(compact(s.detail))}</small>
+        </div>`).join('')}
+    </div>`).join('') || '<p class="empty">Aucune règle ne correspond à ce message.</p>';
+}
+
+function compact(detail) {
+  if (!detail) return '';
+  const output = detail.output === undefined ? '' : `sortie=${JSON.stringify(detail.output).slice(0, 180)}`;
+  const rest = Object.entries(detail).filter(([k]) => k !== 'output').map(([k, v]) => `${k}=${typeof v === 'object' ? JSON.stringify(v).slice(0, 90) : v}`).join(' ');
+  return `${output} ${rest}`.trim().slice(0, 400);
+}
+
+$('runSim').onclick = async () => {
+  $('simOut').innerHTML = '<p class="empty">Traitement…</p>';
+  try {
+    const body = { text: $('text').value, type: $('type').value, chatId: $('chatId').value, contactName: $('contactName').value };
+    if (body.type === 'audio') body.mediaToken = 'simulated-media';
+    const data = await api('/api/simulate', { method: 'POST', body: JSON.stringify(body) });
+    $('simOut').innerHTML = `<div class="bubble in">${esc(body.type === 'audio' ? '🎤 note vocale' : body.text)}</div>
+      ${data.skipped ? `<p class="warn-text">${esc(data.skipped)}</p>` : ''}${renderSteps(data.runs)}`;
+    $('lastReplies').innerHTML = (data.outbox ?? []).map((m) => `<div class="bubble">${esc(m.text)}</div>`).join('')
+      || '<p class="empty">La règle n\'a produit aucune réponse.</p>';
+    loadState();
+  } catch (error) { $('simOut').innerHTML = `<p class="err-text">${esc(error.message)}</p>`; }
+};
+
+$('runExplain').onclick = async () => {
+  try {
+    const data = await api('/api/explain', { method: 'POST', body: JSON.stringify({ text: $('text').value, type: $('type').value }) });
+    $('simOut').innerHTML = data.matched.length
+      ? data.matched.map((r) => `<div style="margin-top:10px"><b>${esc(r.name)}</b> <span class="tag">cooldown ${r.cooldownSeconds}s</span>
+          ${r.steps.map((s) => `<div class="step ${s.wouldSkip ? 'skip' : 'ok'}"><b>${esc(s.label)}</b><small>${s.wouldSkip ? 'étape ignorée par la condition' : esc(s.action)}</small></div>`).join('')}</div>`).join('')
+      : '<p class="empty">Aucune règle ne se déclencherait.</p>';
+  } catch (error) { $('simOut').innerHTML = `<p class="err-text">${esc(error.message)}</p>`; }
+};
+
+async function loadState() {
+  const state = await api('/api/state');
+  $('provider').textContent = `WhatsApp : ${state.provider}`;
+  $('provider').className = `pill ${state.provider === 'cloud' ? 'on' : ''}`;
+  $('counts').textContent = `${state.counts.events} msg · ${state.counts.ok} ok · ${state.counts.errors} err`;
+  $('rulesCount').textContent = `${state.rules.enabled}/${state.rules.total} règles`;
+  $('connectors').innerHTML = Object.values(state.connectors).map((c) => `
+    <div class="item" style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:9px 0">
+      <span>${esc(c.label)}${c.detail ? ` <span class="time">${esc(c.detail)}</span>` : ''}</span>
+      <span class="pill ${c.ready ? 'on' : 'off'}">${c.ready ? 'branché' : 'à configurer'}</span>
+    </div>`).join('');
+  $('actions').innerHTML = state.actions.map((a) => `<div class="item"><b>${esc(a.label)}</b> <span class="tag">${esc(a.name)}</span><div class="time">${esc(a.description)}</div></div>`).join('');
+  return state;
+}
+
+async function loadLog() {
+  const [ev, ru] = await Promise.all([api('/api/events?limit=80'), api('/api/runs?limit=40')]);
+  $('events').innerHTML = ev.events.length ? ev.events.map((e) => `
+    <div class="item"><span class="time">${esc(e.ts.slice(11, 19))}</span> <span class="tag">${esc(e.kind)}</span> <span class="tag">${esc(e.type)}</span>
+      ${e.dryRun || e.simulated ? '<span class="tag">simulé</span>' : ''} <b>${esc(e.chatId)}</b>
+      <div class="time">${esc(e.text || (e.hasMedia ? '🎤 média' : '(vide)'))}</div></div>`).join('') : '<p class="empty">Rien pour l\'instant.</p>';
+  $('runs').innerHTML = ru.runs.length ? ru.runs.map((r) => `
+    <div class="item"><details><summary><span class="time">${esc((r.ts ?? '').slice(11, 19))}</span>
+      <span class="pill ${r.status === 'ok' ? 'on' : r.status === 'error' ? '' : 'off'}">${esc(r.status)}</span> ${esc(r.ruleName)}</summary>
+      ${renderSteps([r])}</details></div>`).join('') : '<p class="empty">Aucune exécution.</p>';
+}
+
+async function loadRules() {
+  const data = await api('/api/rules');
+  $('rules').value = JSON.stringify({ rules: data.rules }, null, 2);
+  $('rulesMsg').innerHTML = data.problems.length ? `<div class="err-text">${data.problems.map(esc).join('<br>')}</div>` : '<div class="ok-text">Fichier valide.</div>';
+}
+
+$('saveRules').onclick = async () => {
+  let parsed;
+  try { parsed = JSON.parse($('rules').value); } catch (error) { return flash('rulesMsg', `JSON invalide : ${error.message}`, 'err'); }
+  try {
+    const data = await api('/api/rules', { method: 'PUT', body: JSON.stringify(parsed) });
+    flash('rulesMsg', `Enregistré, ${data.enabled} règle(s) active(s). Recharge à chaud sous 4 s.`, 'ok');
+  } catch (error) { flash('rulesMsg', error.message, 'err'); }
+  loadRules();
+};
+$('reloadRules').onclick = loadRules;
+
+$('token').value = localStorage.getItem('passerelle-token') ?? '';
+$('token').oninput = () => localStorage.setItem('passerelle-token', token());
+
+const TABS = ['sim', 'log', 'rules', 'conn', 'help'];
+const initial = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'sim';
+activateTab(initial);
+window.addEventListener('hashchange', () => activateTab(TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'sim'));
+
+// Paramètres d'URL : alimentent la démo et permettent de filmer chaque étape
+// de l'interface image par image (script scripts/make-gif.cjs).
+const params = new URLSearchParams(location.search);
+if (params.get('text') !== null) $('text').value = params.get('text');
+if (params.get('chars')) $('text').value = $('text').value.slice(0, Number(params.get('chars')));
+if (params.get('type')) $('type').value = params.get('type');
+if (params.get('name')) $('contactName').value = params.get('name');
+if (params.get('phone')) $('chatId').value = params.get('phone');
+
+loadState().catch((error) => flash('rulesMsg', error.message, 'err'));
+if (params.get('auto') === '1') setTimeout(() => $('runSim').click(), 120);
+setInterval(loadState, 20000);
+</script>
+</body>
+</html>

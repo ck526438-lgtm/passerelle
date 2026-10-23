@@ -1,0 +1,9 @@
+data/
+node_modules/
+*.log
+.env
+.env.local
+*.session*
+wa-session/
+# images intermédiaires régénérées par scripts/make-gif.cjs
+docs/frames/

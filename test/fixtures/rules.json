@@ -1,0 +1,111 @@
+{
+  "rules": [
+    {
+      "id": "voice-to-crm",
+      "name": "Note vocale → Notion + Sheets + réponse",
+      "exclusive": true,
+      "cooldown_seconds": 120,
+      "filters": {
+        "types": [
+          "audio"
+        ]
+      },
+      "expose_vars": [
+        "transcript",
+        "task"
+      ],
+      "steps": [
+        {
+          "action": "assign_contact"
+        },
+        {
+          "action": "transcribe",
+          "as": "transcript"
+        },
+        {
+          "action": "llm_extract",
+          "as": "task",
+          "source": "{{transcript}}"
+        },
+        {
+          "action": "notion_create_page",
+          "title": "{{task.title}}",
+          "title_property": "Nom",
+          "select": {
+            "Catégorie": "{{task.category}}"
+          },
+          "date": {
+            "Échéance": "{{task.date}}"
+          },
+          "text": {
+            "Contact": "{{contactName}}",
+            "Détails": "{{transcript}}"
+          }
+        },
+        {
+          "action": "sheets_append_row",
+          "tab": "Demandes",
+          "columns": {
+            "Contact": "{{contactName}}",
+            "Résumé": "{{task.title}}",
+            "Échéance": "{{task.date}}"
+          }
+        },
+        {
+          "action": "reply",
+          "template": "Bien noté {{firstName}} ✅ {{task.title}}{{#task.dueLabel}}, pour {{task.dueLabel}}{{/task.dueLabel}}"
+        }
+      ]
+    },
+    {
+      "id": "quote-to-crm",
+      "name": "Devis écrit → Sheets + réponse",
+      "exclusive": true,
+      "filters": {
+        "types": [
+          "text"
+        ],
+        "text_contains_any": [
+          "devis"
+        ]
+      },
+      "steps": [
+        {
+          "action": "parse_task",
+          "as": "task"
+        },
+        {
+          "action": "sheets_append_row",
+          "tab": "Leads",
+          "columns": {
+            "Demande": "{{text}}"
+          }
+        },
+        {
+          "action": "reply",
+          "template": "Merci {{contactName}}, on vous rappelle avec un devis."
+        }
+      ]
+    },
+    {
+      "id": "fallback-ai",
+      "name": "Tout le reste → réponse IA",
+      "filters": {
+        "types": [
+          "text"
+        ]
+      },
+      "steps": [
+        {
+          "action": "llm_generate",
+          "as": "answer",
+          "prompt": "Réponds poliment : {{text}}"
+        },
+        {
+          "action": "reply",
+          "template": "{{answer}}"
+        }
+      ]
+    }
+  ]
+}

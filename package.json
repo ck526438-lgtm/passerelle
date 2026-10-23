@@ -1,0 +1,18 @@
+{
+  "name": "passerelle",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pont auto-hébergé entre WhatsApp et Notion / Google Sheets / Airtable. Zero dépendance runtime.",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test \"test/*.test.js\"",
+    "simulate": "node scripts/simulate.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

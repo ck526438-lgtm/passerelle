@@ -1,0 +1,5 @@
+# Le dépôt reste en LF : les fichiers sont écrits sur Windows mais tournent
+# surtout sous Linux/Docker, et un diff ne doit pas dépendre de l'OS du clone.
+* text=auto eol=lf
+*.png binary
+*.gif binary

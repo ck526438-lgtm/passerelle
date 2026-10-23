@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 560" width="1180" height="560" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#40566b"/>
+    </marker>
+  </defs>
+
+  <rect width="1180" height="560" fill="#0d1117"/>
+
+  <text x="40" y="42" fill="#12b886" font-size="13" font-weight="700" letter-spacing="1.2">FLUX</text>
+  <text x="40" y="72" fill="#e8edf2" font-size="22" font-weight="600">WhatsApp &#8594; moteur de r&#232;gles &#8594; votre CRM</text>
+
+  <g stroke="#2b3a4a" stroke-width="1.5" fill="#151b23">
+    <rect x="40" y="110" width="220" height="300" rx="12"/>
+    <rect x="330" y="110" width="330" height="300" rx="12"/>
+    <rect x="354" y="196" width="282" height="52" rx="8"/>
+    <rect x="354" y="258" width="282" height="52" rx="8"/>
+    <rect x="354" y="320" width="282" height="66" rx="8"/>
+    <rect x="730" y="110" width="200" height="130" rx="12"/>
+    <rect x="730" y="264" width="200" height="146" rx="12"/>
+    <rect x="330" y="446" width="330" height="70" rx="12"/>
+    <rect x="40" y="446" width="220" height="70" rx="12"/>
+  </g>
+  <g stroke="#12b886" stroke-width="1.5" fill="#151b23">
+    <rect x="40" y="110" width="220" height="300" rx="12" fill-opacity="0.25" stroke-opacity="0.9"/>
+    <rect x="990" y="110" width="150" height="60" rx="10"/>
+    <rect x="990" y="184" width="150" height="60" rx="10"/>
+    <rect x="990" y="258" width="150" height="60" rx="10"/>
+    <rect x="990" y="332" width="150" height="60" rx="10"/>
+  </g>
+
+  <g fill="#e8edf2" font-size="17" font-weight="600">
+    <text x="64" y="146">WhatsApp</text>
+    <text x="354" y="146">passerelle (Node 24)</text>
+    <text x="750" y="142">Journal</text>
+    <text x="750" y="296">Tableau de bord</text>
+    <text x="354" y="474">IA optionnelle</text>
+    <text x="64" y="474">Sans cl&#233; API</text>
+  </g>
+  <g fill="#e8edf2" font-size="15" font-weight="600">
+    <text x="370" y="218">1. normaliser</text>
+    <text x="370" y="280">2. r&#232;gles (rules.json)</text>
+    <text x="370" y="342">3. &#233;tapes s&#233;quentielles</text>
+    <text x="1008" y="136">Notion</text>
+    <text x="1008" y="210">Google Sheets</text>
+    <text x="1008" y="284">Airtable</text>
+    <text x="1008" y="358">Webhook</text>
+  </g>
+  <g fill="#93a4b4" font-size="13">
+    <text x="64" y="176">Cloud API Meta</text>
+    <text x="64" y="196">(webhook sign&#233; HMAC)</text>
+    <text x="64" y="228">ou adaptateur</text>
+    <text x="64" y="248">test / Baileys</text>
+    <text x="64" y="286">texte &#183; vocal &#183; photo</text>
+    <text x="64" y="306">document &#183; localisation</text>
+    <text x="64" y="340">r&#233;ponses sortantes</text>
+    <text x="64" y="360">fen&#234;tre de 24 h</text>
+    <text x="354" y="176">z&#233;ro d&#233;pendance runtime</text>
+    <text x="370" y="236">message &#8594; port&#233;e commune</text>
+    <text x="370" y="298">filtres &#183; cooldown &#183; exclusive</text>
+    <text x="370" y="360">transcrire &#8594; extraire &#8594; &#233;crire</text>
+    <text x="370" y="376">&#8594; r&#233;pondre, avec &#171;&#160;if&#160;&#187; par &#233;tape</text>
+    <text x="750" y="168">events.ndjson</text>
+    <text x="750" y="186">runs.ndjson</text>
+    <text x="750" y="204">contacts.ndjson</text>
+    <text x="750" y="226">sans base de donn&#233;es</text>
+    <text x="750" y="322">:8787 &#183; jeton admin</text>
+    <text x="750" y="342">simuler un message</text>
+    <text x="750" y="362">&#233;diter rules.json</text>
+    <text x="750" y="382">rechargement &#224; chaud</text>
+    <text x="354" y="496">Whisper (voix) &#183; tout LLM compatible OpenAI</text>
+    <text x="64" y="496">heuristiques fran&#231;aises incluses</text>
+    <text x="1008" y="156">page + commentaire</text>
+    <text x="1008" y="230">ligne &#183; recherche</text>
+    <text x="1008" y="304">enregistr.</text>
+    <text x="1008" y="378">alerte urgence</text>
+  </g>
+
+  <g stroke="#40566b" stroke-width="1.6" fill="none" marker-end="url(#arrow)">
+    <path d="M260 200 L326 200"/>
+    <path d="M636 300 L726 300"/>
+    <path d="M636 200 L726 178"/>
+    <path d="M930 172 L986 143"/>
+    <path d="M930 208 L986 213"/>
+    <path d="M930 262 L986 284"/>
+    <path d="M930 334 L986 358"/>
+    <path d="M264 480 L326 480"/>
+  </g>
+  <g stroke="#40566b" stroke-width="1.6" fill="none" stroke-dasharray="5 4" marker-end="url(#arrow)">
+    <path d="M495 442 L495 414"/>
+    <path d="M150 442 L150 414"/>
+    <path d="M354 396 L266 396"/>
+  </g>
+  <text x="278" y="388" fill="#93a4b4" font-size="12">reply &#8594; WhatsApp</text>
+</svg>

@@ -1,0 +1,15 @@
+services:
+  passerelle:
+    build: .
+    image: passerelle:0.1
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./rules.json:/app/rules.json
+    # Le webhook Meta exige du HTTPS. Le plus simple sans ouvrir de port :
+    #   cloudflared tunnel --url http://passerelle:8787
+    # ou laisser Caddy/Traefik devant ce service.

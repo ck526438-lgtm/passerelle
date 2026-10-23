@@ -1,0 +1,162 @@
+{
+  "rules": [
+    {
+      "id": "voice-note-to-task",
+      "name": "Note vocale → tâche + échéance",
+      "enabled": true,
+      "exclusive": true,
+      "cooldown_seconds": 120,
+      "trigger": { "type": "inbound_message" },
+      "filters": { "types": ["audio"] },
+      "steps": [
+        { "action": "mark_read" },
+        { "action": "assign_contact" },
+        { "action": "transcribe", "as": "transcript" },
+        { "action": "llm_extract", "as": "task", "source": "{{transcript}}", "continue_on_error": true },
+        {
+          "action": "notion_create_page",
+          "title": "{{task.title}}",
+          "title_property": "Nom",
+          "select": { "Catégorie": "{{task.category}}", "Priorité": "{{task.urgent}}" },
+          "date": { "Échéance": "{{task.date}}" },
+          "text": { "Contact": "{{contactName}}", "Source": "WhatsApp", "Détails": "{{transcript}}" },
+          "children_text": "Message original ({{date}} {{time}}) : {{transcript}}",
+          "continue_on_error": true
+        },
+        {
+          "action": "sheets_append_row",
+          "tab": "Demandes",
+          "columns": {
+            "Reçu le": "{{datetime}}",
+            "Contact": "{{contactName}}",
+            "Téléphone": "{{chatId}}",
+            "Catégorie": "{{task.category}}",
+            "Échéance": "{{task.date}}",
+            "Résumé": "{{task.title}}",
+            "Message": "{{transcript}}"
+          },
+          "continue_on_error": true
+        },
+        {
+          "action": "reply",
+          "if": { "path": "task.dueLabel", "op": "exists" },
+          "template": "Bien noté {{firstName}} ✅ « {{task.title}} », à faire pour {{task.dueLabel}}. Je vous confirme le créneau très vite."
+        },
+        {
+          "action": "reply",
+          "if": { "path": "task.dueLabel", "op": "is_empty" },
+          "template": "Bien noté {{firstName}} ✅ « {{task.title}} ». Je reviens vers vous avec un devis sous 24 h."
+        }
+      ]
+    },
+
+    {
+      "id": "quote-request",
+      "name": "Demande de devis → lead CRM",
+      "enabled": true,
+      "exclusive": true,
+      "filters": { "types": ["text"], "text_contains_any": ["devis", "prix", "tarif", "coûte", "combien"], "min_chars": 8 },
+      "steps": [
+        { "action": "assign_contact" },
+        { "action": "parse_task", "as": "task", "source": "{{text}}" },
+        {
+          "action": "sheets_append_row",
+          "tab": "Leads",
+          "columns": {
+            "Date": "{{date}}",
+            "Heure": "{{time}}",
+            "Nom": "{{contactName}}",
+            "Téléphone": "{{chatId}}",
+            "Demande": "{{text}}",
+            "Relance": "{{task.date}}"
+          },
+          "continue_on_error": true
+        },
+        {
+          "action": "airtable_create_record",
+          "fields": { "Nom": "{{contactName}}", "Téléphone": "{{chatId}}", "Demande": "{{text}}", "Statut": "Nouveau lead" },
+          "continue_on_error": true
+        },
+        {
+          "action": "reply",
+          "template": "Bonjour {{firstName}}, merci pour votre demande 🙌 Pour un devis précis, il me faut : 1) la ville/quartier, 2) une photo de la zone concernée, 3) vos disponibilités. Je reviens vers vous dans la journée."
+        }
+      ]
+    },
+
+    {
+      "id": "after-hours-hold",
+      "name": "Hors heures d'ouverture → accusé",
+      "enabled": true,
+      "exclusive": true,
+      "filters": { "fields": { "isOutsideHours": true }, "text_excludes_any": ["urgent", "urgence", "fuite", "cassé", "plus d'eau", "help"] },
+      "steps": [
+        { "action": "assign_contact" },
+        {
+          "action": "reply",
+          "template": "Bonjour {{firstName}}, nos bureaux sont fermés (horaires : lun-sam 8h-19h). Votre message est bien enregistré, on vous répond dès la réouverture. En cas d'urgence, tapez « urgent »."
+        }
+      ]
+    },
+
+    {
+      "id": "urgent-escalation",
+      "name": "Urgence → notification + réponse rapide",
+      "enabled": true,
+      "filters": { "text_contains_any": ["urgent", "urgence", "fuite", "cassé", "dépannage"] },
+      "steps": [
+        { "action": "assign_contact" },
+        {
+          "action": "http_request",
+          "url": "{{alertWebhook}}",
+          "if": { "path": "alertWebhook", "op": "exists" },
+          "body": { "text": "🚨 Urgence WhatsApp de {{contactName}} ({{chatId}}) : {{text}}" },
+          "continue_on_error": true
+        },
+        {
+          "action": "notion_create_page",
+          "title": "URGENCE — {{text}}",
+          "title_property": "Nom",
+          "select": { "Catégorie": "sav", "Priorité": "haute" },
+          "text": { "Contact": "{{contactName}}", "Détails": "{{text}}" },
+          "continue_on_error": true
+        },
+        {
+          "action": "reply",
+          "template": "🚨 C'est noté comme urgent. Je vous rappelle dans les 15 minutes. Si c'est une fuite d'eau, coupez l'arrivée générale en attendant."
+        }
+      ]
+    },
+
+    {
+      "id": "faq-ai-answer",
+      "name": "Question ouverte → réponse IA",
+      "enabled": false,
+      "exclusive": true,
+      "filters": { "types": ["text"], "text_regex": "\\?\\s*$", "min_chars": 6 },
+      "steps": [
+        {
+          "action": "llm_generate",
+          "as": "answer",
+          "system": "Tu réponds au nom d'une entreprise locale. Style : français simple, 3 lignes maximum, tutoiement interdit, jamais de promesse de prix. Si tu ne sais pas, dis que l'équipe va répondre.",
+          "prompt": "Question WhatsApp : {{text}}",
+          "if": { "path": "flags.llm", "op": "equals", "value": true }
+        },
+        { "action": "reply", "template": "{{answer}}", "if": { "path": "answer", "op": "exists" } }
+      ]
+    },
+
+    {
+      "id": "keyword-menu",
+      "name": "Mot-clé « menu » → catalogue",
+      "enabled": false,
+      "filters": { "text_starts_with_any": ["menu", "aide", "aidez"] },
+      "steps": [
+        {
+          "action": "reply",
+          "template": "Bonjour {{firstName}} 👋\n\n1 — Demander un devis\n2 — Suivre une intervention\n3 — Parler à un humain\n\nRépondez simplement par le numéro."
+        }
+      ]
+    }
+  ]
+}
